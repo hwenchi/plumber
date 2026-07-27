@@ -3,14 +3,43 @@
 Stream processing for small data on a single machine.
 
 ```python
-@valve(outlet="raw")
-def watch_directory():
-    return [...]
+# squares.py
+from plumber.decorator import valve
 
-@valve(inlet="raw", outlet="attached")
-def attach_metadata(d):
-    return [...]
+
+@valve(outlet="ticks", throttle=1)
+def count_up(_, reservoir):
+    n = reservoir.get("n", 0)
+    return [{"n": n}], {"n": n + 1}
+
+
+@valve(inlet="ticks", outlet="squares")
+def square(d):
+    return [{**d, "square": d["n"] ** 2}]
+
+
+@valve(inlet="squares")
+def report(d):
+    print(d["n"], d["square"])
 ```
+
+```python
+# run.py
+from plumber.pipeline import Pipeline
+from squares import count_up, report, square
+
+if __name__ == "__main__":
+    Pipeline([count_up, square, report], "data/").run()
+```
+
+A valve takes the incoming drop, plus a reservoir if it keeps state, and
+returns a list of drops and the next reservoir. Each valve runs in a fresh
+process that imports its module, so valves live in an importable file,
+separate from the script that runs the pipeline.
+
+Two knobs set a valve's pace. `backoff` is how long it waits after finding
+its inlet empty. `throttle` is the minimum time between drips, for a valve
+that would otherwise run flat out.
 
 ## Example
 
