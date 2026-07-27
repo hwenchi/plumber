@@ -39,7 +39,7 @@ separate from the script that runs the pipeline.
 
 Two knobs set a valve's pace. `backoff` is how long it waits after finding
 its inlet empty. `throttle` is the minimum time between drips, for a valve
-that would otherwise run flat out.
+that always has work.
 
 ## Example
 
@@ -77,23 +77,22 @@ uv run python examples/run_vision.py
 
 ## Design
 
-- **A valve function holds domain logic only.** Crash safety, process
-  lifecycle, and data movement are the framework's job.
-- **Valves don't reference each other.** Each one reads its inlet and
-  returns drops, so adding a valve leaves the rest untouched. State lives
-  on disk, so the process is disposable.
-- **Fan-out only.** Each valve has at most one inlet. Any number of valves
-  can read the same pipe.
-- **One OS process per valve.** `attach`/`detach` pause and resume one
-  valve at a time, and a blocked or crashing valve leaves the others
-  running.
-- **Checkpoints are atomic** (write, fsync, rename). A restarted valve
-  rolls its outlet back to the last checkpoint, so the pipe holds no
-  duplicate output. A downstream valve may already have read output written
-  past that checkpoint.
-- **Binary payloads stay out of the pipe.** A valve writes the bytes to
-  disk and puts the path in the drop. The framework has no blob storage.
-- **The pipeline graph runs on one machine.** A valve can call out to
-  remote compute, such as an HPC job or a cloud API.
-- **Pipes persist after being consumed**, so every intermediate result
-  stays inspectable and replayable.
+- **The data path isn't distributed.** Where and how a valve computes is
+  not plumber's concern. Pipes and gauges live on one machine's disk, and
+  every drop funnels through it.
+- **A valve doesn't read two pipes.** No fan-in. Any number of valves can
+  read the same pipe.
+- **A valve doesn't do plumbing.** Crash safety, process lifecycle, and
+  data movement are the framework's job. The function carries domain logic.
+- **A restart doesn't duplicate output.** Checkpoints are atomic (write,
+  fsync, rename), and a restarted valve rolls its outlet back to the last
+  one. A downstream valve may already have read past that point.
+- **Reading a pipe doesn't empty it.** Every intermediate result stays on
+  disk, inspectable and replayable.
+- **Valves don't share a process.** `attach`/`detach` pause one valve at a
+  time, and a blocked or crashing valve leaves the others running.
+- **A valve doesn't know the others.** It reads its inlet and returns
+  drops, so adding one leaves the rest untouched. State lives on disk, so
+  the process is disposable.
+- **A pipe doesn't carry bytes.** A valve writes binary payloads to disk
+  and puts the path in the drop. The framework has no blob storage.
