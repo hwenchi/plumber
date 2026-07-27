@@ -2,11 +2,12 @@ import inspect
 
 
 class Flow:
-    def __init__(self, fn, inlet, outlet, poll_interval):
+    def __init__(self, fn, inlet, outlet, backoff, throttle):
         self.fn = fn
         self.inlet = inlet
         self.outlet = outlet
-        self.poll_interval = poll_interval
+        self.backoff = backoff
+        self.throttle = throttle
         self.arity = len(inspect.signature(fn).parameters)
 
     def __call__(self, drop_in, reservoir):
@@ -25,8 +26,8 @@ class Flow:
         return self.id
 
 
-def valve(inlet=None, outlet=None, poll_interval=0.1):
+def valve(inlet=None, outlet=None, backoff=0.1, throttle=0.0):
     def decorate(fn):
-        return Flow(fn, inlet, outlet, poll_interval)
+        return Flow(fn, inlet, outlet, backoff, throttle)
 
     return decorate

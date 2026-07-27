@@ -7,7 +7,7 @@ from plumber.decorator import valve
 from examples.vision.shared import FRAME_DIR, HEIGHT, WIDTH
 
 
-@valve(inlet="positions", outlet="frames", poll_interval=0.02)
+@valve(inlet="positions", outlet="frames", backoff=0.02)
 def draw_frame(d):
     canvas = np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
     for ball in d["balls"]:

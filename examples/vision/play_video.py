@@ -5,7 +5,7 @@ from plumber.decorator import valve
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 
-@valve(inlet="detected", poll_interval=0.02)
+@valve(inlet="detected", backoff=0.02)
 def play_video(d):
     image = cv2.imread(d["path"])
     detections = d["detections"]

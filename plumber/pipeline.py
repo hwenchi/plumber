@@ -37,13 +37,13 @@ class Pipeline:
         for actuator in self.actuators.values():
             actuator.stop()
 
-    def run(self, poll_interval=1):
+    def run(self, check_interval=1):
         self.start()
         signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
 
         try:
             while True:
-                time.sleep(poll_interval)
+                time.sleep(check_interval)
                 for name, actuator in self.actuators.items():
                     if not actuator.is_running():
                         print(f"{name} crashed (exit code {actuator.returncode}), restarting")

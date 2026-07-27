@@ -7,7 +7,7 @@ from plumber.decorator import valve
 CRASH_PROBABILITY = 0.002
 
 
-@valve(inlet="frames", outlet="detected", poll_interval=0.02)
+@valve(inlet="frames", outlet="detected", backoff=0.02)
 def detect_circles(d):
     if random.random() < CRASH_PROBABILITY:
         raise RuntimeError("simulated crash in detect_circles")
