@@ -1,6 +1,6 @@
 # plumber
 
-Intentionally naive stream processing for non-distributed small data.
+Stream processing for small data on a single machine.
 
 ```python
 @valve(outlet="raw")
@@ -14,10 +14,17 @@ def attach_metadata(d):
 
 ## Example
 
-`examples/vision/` — a source generates synthetic bouncing balls, a
-transform renders each frame, another detects circles with OpenCV's Hough
-transform, and a sink plays the stream live. Four processes, communicating
-only through JSONL files.
+`examples/vision/` — four valves chained over three pipes:
+
+- `generate_positions` — a stateful source. The reservoir carries each
+  ball's position and velocity from one frame to the next.
+- `draw_frame` — draws the balls, writes the PNG to disk, and puts the path
+  in the drop.
+- `detect_circles` — finds the balls again with a Hough transform and
+  annotates the frame. Crashes on purpose on ~0.2% of drops, so restart and
+  recovery show up in a normal run.
+- `play_video` — a sink. Labels the frame with its detections and displays
+  it.
 
 ```bash
 uv run python examples/run_vision.py
