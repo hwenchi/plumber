@@ -21,7 +21,7 @@ def main():
     gauge = Gauge(data_dir, flow.id)
     valve = Valve(flow, inlet, outlet, gauge)
 
-    run_forever(valve)
+    run_forever(valve, poll_interval=flow.poll_interval)
 
 
 if __name__ == "__main__":

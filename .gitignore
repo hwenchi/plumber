@@ -4,3 +4,6 @@ __pycache__/
 *.egg-info/
 .venv/
 .idea/
+
+examples/vision_data/
+examples/vision/frames/

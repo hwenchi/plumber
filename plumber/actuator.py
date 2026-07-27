@@ -36,3 +36,7 @@ class Actuator:
     @property
     def pid(self):
         return self.process.pid
+
+    @property
+    def returncode(self):
+        return self.process.returncode

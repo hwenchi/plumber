@@ -3,12 +3,17 @@ name = "plumber"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "numpy>=2.2.6",
+    "opencv-python>=5.0.0.93",
     "psutil>=7.2.2",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["plumber", "examples"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
