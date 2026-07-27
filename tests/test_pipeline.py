@@ -21,6 +21,28 @@ def test_valid_pipeline_stores_flows_and_builds_actuators(tmp_path):
     assert all(isinstance(a, Actuator) for a in pipeline.actuators.values())
 
 
+def test_stop_stops_all_actuators(tmp_path):
+    @valve(outlet="raw")
+    def watch_directory():
+        return []
+
+    pipeline = Pipeline([watch_directory], tmp_path)
+
+    class FakeActuator:
+        def __init__(self):
+            self.stopped = False
+
+        def stop(self):
+            self.stopped = True
+
+    fake = FakeActuator()
+    pipeline.actuators[watch_directory.id] = fake
+
+    pipeline.stop()
+
+    assert fake.stopped is True
+
+
 def test_two_producers_for_same_outlet_raises(tmp_path):
     @valve(outlet="raw")
     def watch_directory_a():

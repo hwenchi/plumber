@@ -1,10 +1,17 @@
+import random
+
 import cv2
 
 from plumber.decorator import valve
 
+CRASH_PROBABILITY = 0.002
+
 
 @valve(inlet="frames", outlet="detected", poll_interval=0.02)
 def detect_circles(d):
+    if random.random() < CRASH_PROBABILITY:
+        raise RuntimeError("simulated crash in detect_circles")
+
     image = cv2.imread(d["path"])
     gray = cv2.medianBlur(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 5)
 

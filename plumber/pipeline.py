@@ -1,4 +1,11 @@
+import signal
+import time
+
 from plumber.actuator import Actuator
+
+
+def _raise_keyboard_interrupt(signum, frame):
+    raise KeyboardInterrupt
 
 
 class Pipeline:
@@ -25,3 +32,23 @@ class Pipeline:
     def start(self):
         for actuator in self.actuators.values():
             actuator.start()
+
+    def stop(self):
+        for actuator in self.actuators.values():
+            actuator.stop()
+
+    def run(self, poll_interval=1):
+        self.start()
+        signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
+
+        try:
+            while True:
+                time.sleep(poll_interval)
+                for name, actuator in self.actuators.items():
+                    if not actuator.is_running():
+                        print(f"{name} crashed (exit code {actuator.returncode}), restarting")
+                        actuator.restart()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.stop()
